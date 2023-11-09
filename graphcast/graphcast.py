@@ -366,8 +366,6 @@ class GraphCast(predictor_base.Predictor):
     # xarray (batch, time, lat, lon, level, multiple vars, forcings)
     # -> [num_grid_nodes, batch, num_channels]
     grid_node_features: chex.Array = self._inputs_to_grid_node_features(inputs, forcings)
-    print(f" **** inputs_to_grid_node_features: " )
-    print( f" ---> inputs{inputs.shape} + forcings{forcings.shape} -> grid_node_features{grid_node_features.shape} " )
 
     # Transfer data for the grid to the mesh,
     # [num_mesh_nodes, batch, latent_size], [num_grid_nodes, batch, latent_size]
@@ -744,6 +742,8 @@ class GraphCast(predictor_base.Predictor):
     stacked_inputs = model_utils.dataset_to_stacked(inputs)
     stacked_forcings = model_utils.dataset_to_stacked(forcings)
     stacked_inputs = xarray.concat( [stacked_inputs, stacked_forcings], dim="channels")
+    print(f" **** inputs_to_grid_node_features: " )
+    print( f" ---> stacked_inputs{stacked_inputs.dims}: shape={stacked_inputs.shape} " )
 
     # xarray `DataArray` (batch, lat, lon, channels)
     # to single numpy array with shape [lat_lon_node, batch, channels]

@@ -622,11 +622,7 @@ def variable_to_stacked(
   return variable.set_dims(dims)
 
 
-def dataset_to_stacked(
-    dataset: xarray.Dataset,
-    sizes: Optional[Mapping[str, int]] = None,
-    preserved_dims: Tuple[str, ...] = ("batch", "lat", "lon"),
-) -> xarray.DataArray:
+def dataset_to_stacked( dataset: xarray.Dataset, sizes: Optional[Mapping[str, int]] = None, preserved_dims: Tuple[str, ...] = ("batch", "lat", "lon") ) -> xarray.DataArray:
   """Converts an xarray.Dataset to a single stacked array.
 
   This takes each consistuent data_var, converts it into BHWC layout
@@ -644,18 +640,9 @@ def dataset_to_stacked(
     Existing coordinates for preserved_dims axes will be preserved, however
     there will be no coordinates for "channels".
   """
-  data_vars = [
-      variable_to_stacked(dataset.variables[name], sizes or dataset.sizes,
-                          preserved_dims)
-      for name in sorted(dataset.data_vars.keys())
-  ]
-  coords = {
-      dim: coord
-      for dim, coord in dataset.coords.items()
-      if dim in preserved_dims
-  }
-  return xarray.DataArray(
-      data=xarray.Variable.concat(data_vars, dim="channels"), coords=coords)
+  data_vars = [ variable_to_stacked(dataset.variables[name], sizes or dataset.sizes, preserved_dims) for name in sorted(dataset.data_vars.keys()) ]
+  coords = { dim: coord for dim, coord in dataset.coords.items() if dim in preserved_dims }
+  return xarray.DataArray( data=xarray.Variable.concat(data_vars, dim="channels"), coords=coords)
 
 
 def stacked_to_dataset(
