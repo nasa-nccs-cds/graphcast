@@ -1,0 +1,16 @@
+cartopy
+chex
+colabtools
+dask
+dm-haiku
+jax
+jraph
+matplotlib
+numpy
+pandas
+rtree
+scipy
+tree
+trimesh
+typing_extensions
+xarray
