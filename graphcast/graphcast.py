@@ -365,12 +365,13 @@ class GraphCast(predictor_base.Predictor):
     # Convert all input data into flat vectors for each of the grid nodes.
     # xarray (batch, time, lat, lon, level, multiple vars, forcings)
     # -> [num_grid_nodes, batch, num_channels]
-    grid_node_features = self._inputs_to_grid_node_features(inputs, forcings)
+    grid_node_features: chex.Array = self._inputs_to_grid_node_features(inputs, forcings)
+    print(f" **** inputs_to_grid_node_features: " )
+    print( f" ---> inputs{inputs.shape} + forcings{forcings.shape} -> grid_node_features{grid_node_features.shape} " )
 
     # Transfer data for the grid to the mesh,
     # [num_mesh_nodes, batch, latent_size], [num_grid_nodes, batch, latent_size]
-    (latent_mesh_nodes, latent_grid_nodes
-     ) = self._run_grid2mesh_gnn(grid_node_features)
+    (latent_mesh_nodes, latent_grid_nodes ) = self._run_grid2mesh_gnn(grid_node_features)
 
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
@@ -378,8 +379,7 @@ class GraphCast(predictor_base.Predictor):
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
-    output_grid_nodes = self._run_mesh2grid_gnn(
-        updated_latent_mesh_nodes, latent_grid_nodes)
+    output_grid_nodes = self._run_mesh2grid_gnn( updated_latent_mesh_nodes, latent_grid_nodes)
 
     # Conver output flat vectors for the grid nodes to the format of the output.
     # [num_grid_nodes, batch, output_size] ->
@@ -736,50 +736,34 @@ class GraphCast(predictor_base.Predictor):
 
     return output_grid_nodes
 
-  def _inputs_to_grid_node_features(
-      self,
-      inputs: xarray.Dataset,
-      forcings: xarray.Dataset,
-      ) -> chex.Array:
+  def _inputs_to_grid_node_features( self, inputs: xarray.Dataset, forcings: xarray.Dataset  ) -> chex.Array:
     """xarrays -> [num_grid_nodes, batch, num_channels]."""
 
     # xarray `Dataset` (batch, time, lat, lon, level, multiple vars)
     # to xarray `DataArray` (batch, lat, lon, channels)
     stacked_inputs = model_utils.dataset_to_stacked(inputs)
     stacked_forcings = model_utils.dataset_to_stacked(forcings)
-    stacked_inputs = xarray.concat(
-        [stacked_inputs, stacked_forcings], dim="channels")
+    stacked_inputs = xarray.concat( [stacked_inputs, stacked_forcings], dim="channels")
 
     # xarray `DataArray` (batch, lat, lon, channels)
     # to single numpy array with shape [lat_lon_node, batch, channels]
-    grid_xarray_lat_lon_leading = model_utils.lat_lon_to_leading_axes(
-        stacked_inputs)
-    return xarray_jax.unwrap(grid_xarray_lat_lon_leading.data).reshape(
-        (-1,) + grid_xarray_lat_lon_leading.data.shape[2:])
+    grid_xarray_lat_lon_leading = model_utils.lat_lon_to_leading_axes(  stacked_inputs)
+    return xarray_jax.unwrap(grid_xarray_lat_lon_leading.data).reshape( (-1,) + grid_xarray_lat_lon_leading.data.shape[2:])
 
-  def _grid_node_outputs_to_prediction(
-      self,
-      grid_node_outputs: chex.Array,
-      targets_template: xarray.Dataset,
-      ) -> xarray.Dataset:
+  def _grid_node_outputs_to_prediction( self, grid_node_outputs: chex.Array, targets_template: xarray.Dataset, ) -> xarray.Dataset:
     """[num_grid_nodes, batch, num_outputs] -> xarray."""
-
     # numpy array with shape [lat_lon_node, batch, channels]
     # to xarray `DataArray` (batch, lat, lon, channels)
     assert self._grid_lat is not None and self._grid_lon is not None
     grid_shape = (self._grid_lat.shape[0], self._grid_lon.shape[0])
-    grid_outputs_lat_lon_leading = grid_node_outputs.reshape(
-        grid_shape + grid_node_outputs.shape[1:])
+    grid_outputs_lat_lon_leading = grid_node_outputs.reshape( grid_shape + grid_node_outputs.shape[1:])
     dims = ("lat", "lon", "batch", "channels")
-    grid_xarray_lat_lon_leading = xarray_jax.DataArray(
-        data=grid_outputs_lat_lon_leading,
-        dims=dims)
+    grid_xarray_lat_lon_leading = xarray_jax.DataArray( data=grid_outputs_lat_lon_leading, dims=dims)
     grid_xarray = model_utils.restore_leading_axes(grid_xarray_lat_lon_leading)
 
     # xarray `DataArray` (batch, lat, lon, channels)
     # to xarray `Dataset` (batch, one time step, lat, lon, level, multiple vars)
-    return model_utils.stacked_to_dataset(
-        grid_xarray.variable, targets_template)
+    return model_utils.stacked_to_dataset( grid_xarray.variable, targets_template)
 
 
 def _add_batch_second_axis(data, batch_size):

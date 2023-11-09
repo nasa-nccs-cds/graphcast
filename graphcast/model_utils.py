@@ -694,6 +694,8 @@ def stacked_to_dataset(
       raise ValueError( f"stacked_to_dataset requires all Variables to have {preserved_dims} dimensions, but found only {template_var.dims}.")
     unstack_from_channels_sizes[name] = { dim: size for dim, size in template_var.sizes.items() if dim not in preserved_dims}
     print(f" --->> unstack_from_channels_sizes = {unstack_from_channels_sizes[name]}")
+
+
   channels = {name: np.prod(list(unstack_sizes.values()), dtype=np.int64) for name, unstack_sizes in unstack_from_channels_sizes.items()}
   total_expected_channels = sum(channels.values())
   found_channels = stacked_array.sizes["channels"]
