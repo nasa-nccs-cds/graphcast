@@ -219,7 +219,7 @@ class Predictor(predictor_base.Predictor):
     dump_dset( "targets_template", targets_template)
     dump_dset( "scan_result_template", scan_result_template)
     _, scan_result_treedef = jax.tree_util.tree_flatten(scan_result_template)
-    print( f" scan_result_treedef: {type(scan_result_treedef)}, flat_preds: {type(flat_preds[0])}")
+    print( f" scan_result_treedef: {type(scan_result_treedef)}, flat_preds: {type(flat_preds[0].get_referent())}")
     predictions = jax.tree_util.tree_unflatten(scan_result_treedef, flat_preds)
     return predictions
 
