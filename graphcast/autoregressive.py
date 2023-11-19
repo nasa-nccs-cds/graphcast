@@ -177,7 +177,7 @@ class Predictor(predictor_base.Predictor):
 
     def one_step_prediction( inputs: xarray.Dataset, scan_variables):
 
-      print( f"one_step_prediction: {type(inputs)} {type(scan_variables)}" )
+      print( f"scan_variables: {type(scan_variables[0])}" )
       dump_dset("inputs", targets_template)
 
       flat_forcings = scan_variables
@@ -219,6 +219,7 @@ class Predictor(predictor_base.Predictor):
     dump_dset( "targets_template", targets_template)
     dump_dset( "scan_result_template", scan_result_template)
     _, scan_result_treedef = jax.tree_util.tree_flatten(scan_result_template)
+    print( f" scan_result_treedef: {type(scan_result_treedef)}, flat_preds: {type(flat_preds)}")
     predictions = jax.tree_util.tree_unflatten(scan_result_treedef, flat_preds)
     return predictions
 
