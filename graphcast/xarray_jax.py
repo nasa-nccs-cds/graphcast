@@ -107,10 +107,18 @@ import numpy as np
 import tree
 import xarray
 
+def wrap(value):
+  """Wraps JAX arrays for use in xarray, passing through other values."""
+  if isinstance(value, jax.Array):
+    return JaxArrayWrapper(value)
+  else:
+    return value
 
 def Variable(dims, data, **kwargs) -> xarray.Variable:  # pylint:disable=invalid-name
   """Like xarray.Variable, but can wrap JAX arrays."""
-  return xarray.Variable(dims, wrap(data), **kwargs)
+  wrapped_data = wrap(data)
+  print(f"\n Jax Variable-->>> dims={dims}, data shape = {wrapped_data.shape}, input type = {type(data)}")
+  return xarray.Variable(dims, wrapped_data, **kwargs)
 
 
 _JAX_COORD_ATTR_NAME = '_jax_coord'
@@ -324,14 +332,6 @@ def assign_jax_coords(
     ) -> DatasetOrDataArray:
   """Assigns only jax_coords, with same API as xarray's assign_coords."""
   return assign_coords(x, jax_coords=jax_coords or jax_coords_kwargs)
-
-
-def wrap(value):
-  """Wraps JAX arrays for use in xarray, passing through other values."""
-  if isinstance(value, jax.Array):
-    return JaxArrayWrapper(value)
-  else:
-    return value
 
 
 def unwrap(value, require_jax=False):
@@ -650,7 +650,7 @@ def _unflatten_variable(
   dims = aux
   dims_change_fn = _DIMS_CHANGE_ON_UNFLATTEN_FN.get(None)
   if dims_change_fn: dims = dims_change_fn(dims)
-  print( f"\n xarray_jax:unflatten_variable>>> dims={dims}" ) # , data={children[0]}")
+  # print( f"\n xarray_jax:unflatten_variable>>> dims={dims}" ) # , data={children[0]}")
   return Variable(dims=dims, data=children[0])
 
 
