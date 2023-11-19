@@ -117,7 +117,7 @@ def wrap(value):
 def Variable(dims, data, **kwargs) -> xarray.Variable:  # pylint:disable=invalid-name
   """Like xarray.Variable, but can wrap JAX arrays."""
   wrapped_data = wrap(data)
-  print(f"\n Jax Variable-->>> dims={dims}, data shape = {wrapped_data.shape}, input type = {type(data)}")
+  print(f" ** Jax Variable-->>> dims={dims}, data shape = {wrapped_data.shape}, input type = {type(data)}")
   return xarray.Variable(dims, wrapped_data, **kwargs)
 
 
