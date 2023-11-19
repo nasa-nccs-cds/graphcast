@@ -174,16 +174,14 @@ class Predictor(predictor_base.Predictor):
 
     def one_step_prediction(inputs, scan_variables):
 
+      print( f"one_step_prediction: {type(inputs)} {type(scan_variables)}" )
+
       flat_forcings = scan_variables
-      forcings = _unflatten_and_expand_time(flat_forcings, forcings_treedef,
-                                            target_template.coords['time'])
+      forcings = _unflatten_and_expand_time(flat_forcings, forcings_treedef, target_template.coords['time'])
 
       # Add constant inputs:
       all_inputs = xarray.merge([constant_inputs, inputs])
-      predictions: xarray.Dataset = self._predictor(
-          all_inputs, target_template,
-          forcings=forcings,
-          **kwargs)
+      predictions: xarray.Dataset = self._predictor( all_inputs, target_template, forcings=forcings, **kwargs)
 
       next_frame = xarray.merge([predictions, forcings])
       next_inputs = self._update_inputs(inputs, next_frame)
@@ -201,8 +199,7 @@ class Predictor(predictor_base.Predictor):
     if self._gradient_checkpointing:
       scan_length = targets_template.dims['time']
       if scan_length <= 1:
-        logging.warning(
-            'Skipping gradient checkpointing for sequence length of 1')
+        logging.warning( 'Skipping gradient checkpointing for sequence length of 1')
       else:
         # Just in case we take gradients (e.g. for control), although
         # in most cases this will just be for a forward pass.
@@ -214,9 +211,9 @@ class Predictor(predictor_base.Predictor):
     # The result of scan will have an extra leading axis on all arrays,
     # corresponding to the target times in this case. We need to be prepared for
     # it when unflattening the arrays back into a Dataset:
-    scan_result_template = (
-        target_template.squeeze('time', drop=True)
-        .expand_dims(time=targets_template.coords['time'], axis=0))
+    scan_result_template = ( target_template.squeeze('time', drop=True).expand_dims(time=targets_template.coords['time'], axis=0) )
+    print( f"targets_template: dims = {targets_template.dims}, type = {type(targets_template)}")
+    print(f"scan_result_template: type = {type(scan_result_template)}")
     _, scan_result_treedef = jax.tree_util.tree_flatten(scan_result_template)
     predictions = jax.tree_util.tree_unflatten(scan_result_treedef, flat_preds)
     return predictions
