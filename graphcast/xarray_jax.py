@@ -650,7 +650,7 @@ def _unflatten_variable(
   dims = aux
   dims_change_fn = _DIMS_CHANGE_ON_UNFLATTEN_FN.get(None)
   if dims_change_fn: dims = dims_change_fn(dims)
-  print( f"\n\n xarray_jax:unflatten_variable>>> dims={dims}, data={children[0]}")
+  print( f"\n xarray_jax:unflatten_variable>>> dims={dims}" ) # , data={children[0]}")
   return Variable(dims=dims, data=children[0])
 
 
