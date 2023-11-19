@@ -24,7 +24,10 @@ import haiku as hk
 import jax
 import xarray
 
-
+def dump_dset( name: str, dset: xarray.Dataset ):
+    print( f"\n ---- dump_dset {name}:")
+    for vname, vdata in dset.data_vars.items():
+        print( f"  ** {vname}{vdata.dims}-> {vdata.shape} ")
 def _unflatten_and_expand_time(flat_variables, tree_def, time_coords):
   variables = jax.tree_util.tree_unflatten(tree_def, flat_variables)
   return variables.expand_dims(time=time_coords, axis=0)
@@ -172,9 +175,10 @@ class Predictor(predictor_base.Predictor):
         _get_flat_arrays_and_single_timestep_treedef(forcings))
     scan_variables = flat_forcings
 
-    def one_step_prediction(inputs, scan_variables):
+    def one_step_prediction( inputs: xarray.Dataset, scan_variables):
 
       print( f"one_step_prediction: {type(inputs)} {type(scan_variables)}" )
+      dump_dset("inputs", targets_template)
 
       flat_forcings = scan_variables
       forcings = _unflatten_and_expand_time(flat_forcings, forcings_treedef, target_template.coords['time'])
@@ -211,9 +215,9 @@ class Predictor(predictor_base.Predictor):
     # The result of scan will have an extra leading axis on all arrays,
     # corresponding to the target times in this case. We need to be prepared for
     # it when unflattening the arrays back into a Dataset:
-    scan_result_template = ( target_template.squeeze('time', drop=True).expand_dims(time=targets_template.coords['time'], axis=0) )
-    print( f"targets_template: dims = {targets_template.dims}, type = {type(targets_template)}")
-    print(f"scan_result_template: type = {type(scan_result_template)}")
+    scan_result_template: xarray.Dataset = ( target_template.squeeze('time', drop=True).expand_dims(time=targets_template.coords['time'], axis=0) )
+    dump_dset( "targets_template", targets_template)
+    dump_dset( "scan_result_template", scan_result_template)
     _, scan_result_treedef = jax.tree_util.tree_flatten(scan_result_template)
     predictions = jax.tree_util.tree_unflatten(scan_result_treedef, flat_preds)
     return predictions
