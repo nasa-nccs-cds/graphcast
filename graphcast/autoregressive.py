@@ -177,7 +177,9 @@ class Predictor(predictor_base.Predictor):
 
     def one_step_prediction( inputs: xarray.Dataset, scan_variables):
 
-      print( f"scan_variables: {type(scan_variables[0])}" )
+      print( f"\n\n ** scan_variables: {type(scan_variables[0])}" )
+      for scan_variable in scan_variables:
+          print( f" ------> {repr(scan_variable)}")
       dump_dset("inputs", targets_template)
 
       flat_forcings = scan_variables
@@ -193,6 +195,7 @@ class Predictor(predictor_base.Predictor):
       # Drop the length-1 time dimension, since scan will concat all the outputs
       # for different times along a new leading time dimension:
       predictions = predictions.squeeze('time', drop=True)
+      print( f" predictions: {predictions}")
       # We return the prediction flattened into plain jax arrays, because the
       # extra leading dimension added by scan prevents the tree_util
       # registrations in xarray_jax from unflattening them back into an
