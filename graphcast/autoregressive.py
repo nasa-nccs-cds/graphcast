@@ -180,13 +180,18 @@ class Predictor(predictor_base.Predictor):
       print( f"\n\n ** scan_variables: {type(scan_variables[0])}" )
       for scan_variable in scan_variables:
           print( f" ------> {repr(scan_variable)}")
-      dump_dset("inputs", targets_template)
+
 
       flat_forcings = scan_variables
       forcings = _unflatten_and_expand_time(flat_forcings, forcings_treedef, target_template.coords['time'])
 
       # Add constant inputs:
       all_inputs = xarray.merge([constant_inputs, inputs])
+      print( "\n\n ------------------------------------------------------------------------ \n\n")
+      dump_dset("all_inputs", all_inputs)
+      dump_dset("target_template", target_template)
+      print(f"forcings: {forcings}")
+      print(f"kwargs: {kwargs}")
       predictions: xarray.Dataset = self._predictor( all_inputs, target_template, forcings=forcings, **kwargs)
 
       next_frame = xarray.merge([predictions, forcings])
