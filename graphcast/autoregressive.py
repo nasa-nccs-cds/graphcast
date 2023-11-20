@@ -214,8 +214,10 @@ class Predictor(predictor_base.Predictor):
 
     # Loop (without unroll) with hk states in cell (jax.lax.scan won't do).
     print( "\n --- Loop (without unroll):")
-    print( f" --- --- inputs = {inputs}")
-    print( f" --- --- scan_variables = {scan_variables}")
+    dump_dset( "inputs", inputs )
+    for scan_variable in scan_variables:
+        print(f" --- --- scan_variable: {repr(scan_variable)}")
+
     _, flat_preds = hk.scan(one_step_prediction, inputs, scan_variables)
 
     # The result of scan will have an extra leading axis on all arrays,
