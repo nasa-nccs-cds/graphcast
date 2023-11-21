@@ -176,12 +176,6 @@ class Predictor(predictor_base.Predictor):
     scan_variables = flat_forcings
 
     def one_step_prediction( inputs: xarray.Dataset, scan_variables):
-
-      print( f"\n\n ** scan_variables: {type(scan_variables[0])}" )
-      for scan_variable in scan_variables:
-          print( f" ------> {repr(scan_variable)}")
-
-
       flat_forcings = scan_variables
       forcings = _unflatten_and_expand_time(flat_forcings, forcings_treedef, target_template.coords['time'])
 
@@ -195,7 +189,6 @@ class Predictor(predictor_base.Predictor):
       # Drop the length-1 time dimension, since scan will concat all the outputs
       # for different times along a new leading time dimension:
       predictions = predictions.squeeze('time', drop=True)
-      print( f" predictions: {predictions}")
       # We return the prediction flattened into plain jax arrays, because the
       # extra leading dimension added by scan prevents the tree_util
       # registrations in xarray_jax from unflattening them back into an
@@ -220,12 +213,7 @@ class Predictor(predictor_base.Predictor):
     # corresponding to the target times in this case. We need to be prepared for
     # it when unflattening the arrays back into a Dataset:
     scan_result_template: xarray.Dataset = ( target_template.squeeze('time', drop=True).expand_dims(time=targets_template.coords['time'], axis=0) )
-    dump_dset( "targets_template", targets_template)
-    dump_dset( "scan_result_template", scan_result_template)
     _, scan_result_treedef = jax.tree_util.tree_flatten(scan_result_template)
-    print( f" scan_result_treedef: {type(scan_result_treedef)}, flat_preds:" )
-    for flat_pred in flat_preds:
-        print( f"  --> {repr(flat_pred)}")
     predictions = jax.tree_util.tree_unflatten(scan_result_treedef, flat_preds)
     return predictions
 
