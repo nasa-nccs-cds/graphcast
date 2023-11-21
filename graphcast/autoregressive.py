@@ -187,11 +187,6 @@ class Predictor(predictor_base.Predictor):
 
       # Add constant inputs:
       all_inputs = xarray.merge([constant_inputs, inputs])
-      print( "\n\n ------------------------------------------------------------------------ \n\n")
-      dump_dset("all_inputs", all_inputs)
-      dump_dset("target_template", target_template)
-      print(f"forcings: {forcings}")
-      print(f"kwargs: {kwargs}")
       predictions: xarray.Dataset = self._predictor( all_inputs, target_template, forcings=forcings, **kwargs)
 
       next_frame = xarray.merge([predictions, forcings])
@@ -218,10 +213,6 @@ class Predictor(predictor_base.Predictor):
         one_step_prediction = hk.remat(one_step_prediction)
 
     # Loop (without unroll) with hk states in cell (jax.lax.scan won't do).
-    print( "\n --- Loop (without unroll):")
-    dump_dset( "inputs", inputs )
-    for scan_variable in scan_variables:
-        print(f" --- --- scan_variable: {repr(scan_variable)}")
 
     _, flat_preds = hk.scan(one_step_prediction, inputs, scan_variables)
 
