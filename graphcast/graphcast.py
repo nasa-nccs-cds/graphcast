@@ -742,8 +742,8 @@ class GraphCast(predictor_base.Predictor):
     stacked_inputs = model_utils.dataset_to_stacked(inputs)
     stacked_forcings = model_utils.dataset_to_stacked(forcings)
     stacked_inputs = xarray.concat( [stacked_inputs, stacked_forcings], dim="channels")
-    print(f" **** inputs_to_grid_node_features: " )
-    print( f" ---> stacked_inputs{stacked_inputs.dims}: shape={stacked_inputs.shape} " )
+    #print(f" **** inputs_to_grid_node_features: " )
+    #print( f" ---> stacked_inputs{stacked_inputs.dims}: shape={stacked_inputs.shape} " )
 
     # xarray `DataArray` (batch, lat, lon, channels)
     # to single numpy array with shape [lat_lon_node, batch, channels]
