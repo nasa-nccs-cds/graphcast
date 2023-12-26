@@ -15,11 +15,12 @@
 
 from typing import Mapping
 
-from graphcast import xarray_tree
+import xarray_tree
 import numpy as np
 from typing_extensions import Protocol
 import xarray
-
+from .xarray_jax import JaxArrayWrapper
+from jax._src.interpreters.ad import JVPTracer
 
 LossAndDiagnostics = tuple[xarray.DataArray, xarray.Dataset]
 
@@ -74,9 +75,14 @@ def _mean_preserving_batch1(x: xarray.DataArray) -> xarray.DataArray:
   print( f"\n means preserving batch: {type(x)} \n ")
   return x.mean([d for d in x.dims if d != 'batch'], skipna=False)
 
+def is_tracer( x: xarray.DataArray ) -> bool:
+    if type(x.variable._data) == JaxArrayWrapper:
+        return type( x.variable._data.jax_array ) == JVPTracer
+    return False
+
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
   axes = [i for i,d in enumerate(x.dims) if d != 'batch']
-  print( f"\n means preserving batch: x: {type(x.variable._data)}, jax_array: {type(x.variable._data.jax_array)}")
+  print( f"\n means preserving batch: x: is_tracer = {is_tracer(x)}")
   mdata: np.ndarray  = np.mean( x.values, axis=axes, keepdims=False )
   return xarray.DataArray( mdata, dims=['batch'], coords={'batch': x.coords['batch']}, attrs=x.attrs )
 
