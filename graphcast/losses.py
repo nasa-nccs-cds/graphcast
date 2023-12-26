@@ -81,9 +81,8 @@ def is_tracer( x: xarray.DataArray ) -> bool:
     return False
 
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
+  print(f"\n means preserving batch: x: is_tracer = {is_tracer(x)}")
   axes = [i for i,d in enumerate(x.dims) if d != 'batch']
-  tracer = is_tracer(x)
-  print( f"\n means preserving batch: x: is_tracer = {tracer}")
   mdata: np.ndarray  = np.mean( x.values, axis=axes, keepdims=False )
   return xarray.DataArray( mdata, dims=['batch'], coords={'batch': x.coords['batch']}, attrs=x.attrs )
 
