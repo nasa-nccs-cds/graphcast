@@ -76,7 +76,8 @@ def _mean_preserving_batch1(x: xarray.DataArray) -> xarray.DataArray:
 
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
   axes = [i for i,d in enumerate(x.dims) if d != 'batch']
-  mdata = np.mean(x.values, axis=axes, keepdims=False )
+  print( f"\n means preserving batch: {type(x.variable)}")
+  mdata: np.ndarray  = np.mean( x.values, axis=axes, keepdims=False )
   return xarray.DataArray( mdata, dims=['batch'], coords={'batch': x.coords['batch']}, attrs=x.attrs )
 
 
