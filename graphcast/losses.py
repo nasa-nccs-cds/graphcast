@@ -71,6 +71,7 @@ def weighted_mse_per_level(
 
 
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
+  print( f"\n means preserving batch: {type(x)} \n ")
   return x.mean([d for d in x.dims if d != 'batch'], skipna=False)
 
 
