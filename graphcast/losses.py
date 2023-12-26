@@ -15,11 +15,11 @@
 
 from typing import Mapping
 
-import xarray_tree
+from graphcast import xarray_tree
 import numpy as np
 from typing_extensions import Protocol
 import xarray
-from .xarray_jax import JaxArrayWrapper
+from graphcast.xarray_jax import JaxArrayWrapper
 from jax._src.interpreters.ad import JVPTracer
 
 LossAndDiagnostics = tuple[xarray.DataArray, xarray.Dataset]
