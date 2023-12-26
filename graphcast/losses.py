@@ -70,9 +70,14 @@ def weighted_mse_per_level(
   return sum_per_variable_losses(losses, per_variable_weights)
 
 
-def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
+def _mean_preserving_batch1(x: xarray.DataArray) -> xarray.DataArray:
   print( f"\n means preserving batch: {type(x)} \n ")
   return x.mean([d for d in x.dims if d != 'batch'], skipna=False)
+
+def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
+  axes = [i for i,d in enumerate(x.dims) if d != 'batch']
+  mdata = np.mean(x.values, axis=axes, keepdims=False )
+  return xarray.DataArray( mdata, dims=['batch'], coords={'batch': x.coords['batch']}, attrs=x.attrs )
 
 
 def sum_per_variable_losses(
