@@ -464,10 +464,7 @@ class JaxArrayWrapper(np.lib.mixins.NDArrayOperatorsMixin):
   # Allows conversion to numpy array using np.asarray etc. Warning: doing this
   # will fail in a jax.jit-ed function.
   def __array__(self, dtype=None, context=None):
-    try:
-        return np.asarray(self.jax_array, dtype=dtype)
-    except jax.errors.TracerArrayConversionError:
-        return jnp.asarray(self.jax_array, dtype=dtype)
+    return np.asarray(self.jax_array, dtype=dtype)
 
   __getitem__ = _wrapped(lambda array, *args: array.__getitem__(*args))
   # We drop the kwargs on this as they are not supported by JAX, but xarray
