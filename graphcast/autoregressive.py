@@ -298,8 +298,9 @@ class Predictor(predictor_base.Predictor):
     _, (per_timestep_losses, per_timestep_diagnostics) = hk.scan( one_step_loss, inputs, scan_variables )
 
     # Re-wrap loss and diagnostics as DataArray and average them over time:
-    print( f"\n\n  per_timestep_losses: {type(per_timestep_losses)}{per_timestep_losses.shape}")
-    print( f"  per_timestep_diagnostics: {type(per_timestep_diagnostics)}{per_timestep_diagnostics.shape}")
+    print( f"\n\n  >>>> per_timestep_losses: {type(per_timestep_losses)}{per_timestep_losses.shape}")
+    print(f" >>>> per_timestep_diagnostics: ")
+    for k,v in per_timestep_diagnostics.items(): print(f" ** {k}: {type(v)}")
     (loss, diagnostics) = jax.tree_util.tree_map(
         lambda x: xarray_jax.DataArray(x, dims=('time', 'batch')).mean('time', skipna=False),(per_timestep_losses, per_timestep_diagnostics))
 
