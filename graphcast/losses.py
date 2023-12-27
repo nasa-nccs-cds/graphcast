@@ -60,6 +60,15 @@ def weighted_mse_per_level(
     per_variable_weights: Mapping[str, float],
 ) -> LossAndDiagnostics:
   """Latitude- and pressure-level-weighted MSE loss."""
+
+  print(f"\n --------------------------- weighted_mse_per_level: --------------------------- ")
+  print(f" *** predictions ({type(predictions)}):")
+  for vn, dv in predictions.data_vars.items():
+      print(f" > {vn}{dv.dims}: {dv.shape}, is_tracer = {is_tracer(dv)}")
+  print(f" *** targets ({type(targets)}):")
+  for vn, dv in targets.data_vars.items():
+      print(f" > {vn}{dv.dims}: {dv.shape}, is_tracer = {is_tracer(dv)}")
+
   def loss(prediction, target):
     loss = (prediction - target)**2
     loss *= normalized_latitude_weights(target).astype(loss.dtype)
