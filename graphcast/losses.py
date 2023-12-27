@@ -65,9 +65,6 @@ def weighted_mse_per_level(
   print(f" *** predictions ({type(predictions)}):")
   for vn, dv in predictions.data_vars.items():
       print(f" > {vn}{dv.dims}: {dv.shape}, is_tracer = {is_tracer(dv)}")
-  print(f" *** targets ({type(targets)}):")
-  for vn, dv in targets.data_vars.items():
-      print(f" > {vn}{dv.dims}: {dv.shape}, is_tracer = {is_tracer(dv)}")
 
   def loss(prediction, target):
     loss = (prediction - target)**2
@@ -80,7 +77,7 @@ def weighted_mse_per_level(
   return sum_per_variable_losses(losses, per_variable_weights)
 
 
-def _mean_preserving_batch1(x: xarray.DataArray) -> xarray.DataArray:
+def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
   print( f"\n means preserving batch: {type(x)} \n ")
   return x.mean([d for d in x.dims if d != 'batch'], skipna=False)
 
@@ -88,13 +85,6 @@ def is_tracer( x: xarray.DataArray ) -> bool:
     if type(x.variable._data) == JaxArrayWrapper:
         return type( x.variable._data.jax_array ) == JVPTracer
     return False
-
-def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
-  print(f"\n means preserving batch: x: is_tracer = {is_tracer(x)}")
-  axes = [i for i,d in enumerate(x.dims) if d != 'batch']
-  mdata: np.ndarray  = np.mean( x.values, axis=axes, keepdims=False )
-  return xarray.DataArray( mdata, dims=['batch'], coords={'batch': x.coords['batch']}, attrs=x.attrs )
-
 
 def sum_per_variable_losses(
     per_variable_losses: Mapping[str, xarray.DataArray],
