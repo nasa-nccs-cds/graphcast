@@ -95,14 +95,10 @@ def sum_per_variable_losses( per_variable_losses: Mapping[str, xarray.DataArray]
 
   weighted_per_variable_losses: Mapping[str, xarray.DataArray] = { name: loss * weights.get(name, 1) for name, loss in per_variable_losses.items() }
   total: xarray.DataArray = xarray.concat( weighted_per_variable_losses.values(), dim='variable', join='exact')
-  print( f"\ntotal: {total.dims}{total.shape}\n")
-  stotal: xarray.DataArray = total.sum('variable', skipna=False)
-#  jstotal: jax.Array = xarray_jax.unwrap_data(stotal)
+  jtotal: jax.Array = xarray_jax.unwrap_data(total)
+  jstotal: jax.Array = jtotal.sum( axis=0, keepdims=False )
+  stotal = xarray_jax.DataArray( jstotal, dims=['batch'], coords={'batch':total.coords['batch']}, attrs=total.attrs )
   return stotal, per_variable_losses
-
- # jx: jax.Array = xarray_jax.unwrap_data(x)
- # jmx: jax.Array = jx.mean( axis=list(range(1,x.ndim)),keepdims=False)
- # return xarray_jax.DataArray( jmx, dims=['batch'], coords={'batch':x.coords['batch']}, attrs=x.attrs )
 
 
 def normalized_level_weights(data: xarray.DataArray) -> xarray.DataArray:
