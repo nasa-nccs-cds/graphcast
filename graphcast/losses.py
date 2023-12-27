@@ -15,7 +15,7 @@
 
 from typing import Mapping
 
-from graphcast import xarray_tree
+from graphcast import xarray_tree, xarray_jax
 import numpy as np
 from typing_extensions import Protocol
 import xarray
@@ -78,7 +78,7 @@ def weighted_mse_per_level(
 
 
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
-  print( f"\n means preserving batch: {type(x)} \n ")
+  print( f"\n means preserving batch: x{x.dims}{x.shape} \n ")
   return x.mean([d for d in x.dims if d != 'batch'], skipna=False)
 
 def is_tracer( x: xarray.DataArray ) -> bool:
