@@ -285,8 +285,7 @@ class Predictor(predictor_base.Predictor):
     if self._gradient_checkpointing:
       scan_length = targets.dims['time']
       if scan_length <= 1:
-        logging.warning(
-            'Skipping gradient checkpointing for sequence length of 1')
+        logging.warning( 'Skipping gradient checkpointing for sequence length of 1')
       else:
         one_step_loss = hk.remat(one_step_loss)
 
@@ -296,13 +295,12 @@ class Predictor(predictor_base.Predictor):
     # targets (and unflatten them inside the inner function) because they are
     # passed to the inner function per-timestep without the original time axis.
     # The same apply to the optional forcing.
-    _, (per_timestep_losses, per_timestep_diagnostics) = hk.scan(
-        one_step_loss, inputs, scan_variables)
+    _, (per_timestep_losses, per_timestep_diagnostics) = hk.scan( one_step_loss, inputs, scan_variables )
 
     # Re-wrap loss and diagnostics as DataArray and average them over time:
+    print( f"per_timestep_losses: {per_timestep_losses.dims}{per_timestep_losses.shape}")
+    print( f"per_timestep_diagnostics: {per_timestep_diagnostics.dims}{per_timestep_diagnostics.shape}")
     (loss, diagnostics) = jax.tree_util.tree_map(
-        lambda x: xarray_jax.DataArray(x, dims=('time', 'batch')).mean(  # pylint: disable=g-long-lambda
-            'time', skipna=False),
-        (per_timestep_losses, per_timestep_diagnostics))
+        lambda x: xarray_jax.DataArray(x, dims=('time', 'batch')).mean('time', skipna=False),(per_timestep_losses, per_timestep_diagnostics))
 
     return loss, diagnostics
