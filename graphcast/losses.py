@@ -18,9 +18,7 @@ from typing import Mapping
 from graphcast import xarray_tree, xarray_jax
 import numpy as np
 from typing_extensions import Protocol
-import xarray
-from graphcast.xarray_jax import JaxArrayWrapper
-from jax._src.interpreters.ad import JVPTracer
+import xarray, jax
 
 LossAndDiagnostics = tuple[xarray.DataArray, xarray.Dataset]
 
@@ -79,9 +77,13 @@ def weighted_mse_per_level(
 
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
   print( f"\n means preserving batch: x{x.dims}{x.shape} \n ")
-  return x.mean([d for d in x.dims if d != 'batch'], skipna=False)
+  jx: jax.Array = xarray_jax.unwrap_data(x)
+  jmx: jax.Array = jx.mean( axis=list(range(1,x.ndim)),keepdims=False)
+  return xarray_jax.DataArray( jmx, dims=['batch'], coords={'batch':x.coords['batch']}, attrs=x.attrs )
 
 def is_tracer( x: xarray.DataArray ) -> bool:
+    from graphcast.xarray_jax import JaxArrayWrapper
+    from jax._src.interpreters.ad import JVPTracer
     if type(x.variable._data) == JaxArrayWrapper:
         return type( x.variable._data.jax_array ) == JVPTracer
     return False
