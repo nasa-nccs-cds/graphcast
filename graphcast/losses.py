@@ -76,7 +76,7 @@ def weighted_mse_per_level(
 
 
 def _mean_preserving_batch(x: xarray.DataArray) -> xarray.DataArray:
-  print( f"\n means preserving batch: x{x.dims}{x.shape} \n ")
+  print( f"\n means preserving batch: x{x.dims}{x.shape}\n ")
   jx: jax.Array = xarray_jax.unwrap_data(x)
   jmx: jax.Array = jx.mean( axis=list(range(1,x.ndim)),keepdims=False)
   return xarray_jax.DataArray( jmx, dims=['batch'], coords={'batch':x.coords['batch']}, attrs=x.attrs )
