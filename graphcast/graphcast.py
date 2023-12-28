@@ -27,7 +27,7 @@ a 2D mesh over latitudes and longitudes.
 import os.path
 import traceback
 from typing import Any, Callable, Mapping, Optional
-
+from absl import logging
 import chex
 from graphcast import deep_typed_graph_net
 from graphcast import grid_mesh_connectivity
@@ -375,12 +375,8 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-    raise Exception( f"updated_latent_mesh_nodes>> shape={updated_latent_mesh_nodes.shape}" )
 
-    log_file = open( os.path.expanduser("~/logs/graphcast.log"), "a" )
-    log_file.write( f"\n\nupdated_latent_mesh_nodes>> shape={updated_latent_mesh_nodes.shape}" )
-    traceback.print_stack(file=log_file)
-    log_file.close()
+    logging.warning( f"updated_latent_mesh_nodes>> shape={updated_latent_mesh_nodes.shape}" )
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
