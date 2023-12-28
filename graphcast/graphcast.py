@@ -375,6 +375,7 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
+    raise Exception( f"updated_latent_mesh_nodes>> shape={updated_latent_mesh_nodes.shape}" )
 
     log_file = open( os.path.expanduser("~/logs/graphcast.log"), "a" )
     log_file.write( f"\n\nupdated_latent_mesh_nodes>> shape={updated_latent_mesh_nodes.shape}" )
