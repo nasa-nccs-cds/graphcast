@@ -375,7 +375,7 @@ class GraphCast(predictor_base.Predictor):
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
     print( f"updated_latent_mesh_nodes>> shape={updated_latent_mesh_nodes.shape}" )
-    traceback.print_tb()
+    traceback.print_stack()
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
