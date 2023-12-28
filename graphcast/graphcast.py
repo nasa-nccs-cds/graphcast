@@ -375,7 +375,7 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-    latents = xarray_jax.DataArray(data=updated_latent_mesh_nodes, dims=['grid', 'batch', 'features'])
+    latents = xarray_jax.DataArray(data=updated_latent_mesh_nodes, dims=['grid', 'batch', 'features']).astype(np.float32)
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
