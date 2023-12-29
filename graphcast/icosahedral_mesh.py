@@ -56,8 +56,7 @@ def merge_meshes(
       faces=np.concatenate([mesh.faces for mesh in mesh_list], axis=0))
 
 
-def get_hierarchy_of_triangular_meshes_for_sphere(
-    splits: int) -> List[TriangularMesh]:
+def get_hierarchy_of_triangular_meshes_for_sphere(splits: int) -> List[TriangularMesh]:
   """Returns a sequence of meshes, each with triangularization sphere.
 
   Starting with a regular icosahedron (12 vertices, 20 faces, 30 edges) with

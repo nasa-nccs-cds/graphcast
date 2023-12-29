@@ -254,9 +254,7 @@ class GraphCast(predictor_base.Predictor):
     )
 
     # Specification of the multimesh.
-    self._meshes = (
-        icosahedral_mesh.get_hierarchy_of_triangular_meshes_for_sphere(
-            splits=model_config.mesh_size))
+    self._meshes = icosahedral_mesh.get_hierarchy_of_triangular_meshes_for_sphere(splits=model_config.mesh_size)
 
     # Encoder, which moves data from the grid to the mesh with a single message
     # passing step.
@@ -321,6 +319,9 @@ class GraphCast(predictor_base.Predictor):
         f32_aggregation=False,
         name="mesh2grid_gnn",
     )
+    fine_mesh: icosahedral_mesh.TriangularMesh = self._meshes[-1]
+    print( f"Grid Init>> vertices: {fine_mesh.vertices.shape} ")
+#    latents: jax.Array = hk.get_parameter("latents", [nnodes,1,model_config.latent_size], np.float32, init=jnp.ones)
 
     # Obtain the query radius in absolute units for the unit-sphere for the
     # grid2mesh model, by rescaling the `radius_query_fraction_edge_length`.
