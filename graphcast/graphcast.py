@@ -320,7 +320,7 @@ class GraphCast(predictor_base.Predictor):
         name="mesh2grid_gnn",
     )
     fine_mesh: icosahedral_mesh.TriangularMesh = self._meshes[-1]
-    print( f"Grid Init>> vertices: {fine_mesh.vertices.shape} ")
+    print( f" \n  Grid Init>> vertices: {fine_mesh.vertices.shape} \n  ")
     nnodes, nfeatures = fine_mesh.vertices.shape[0], model_config.latent_size
     latents: jax.Array = hk.get_parameter("latents", [nnodes,1,nfeatures], np.float32, init=jnp.ones)
 
@@ -378,7 +378,7 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-    print(f"Get updated_latent_mesh_nodes: {updated_latent_mesh_nodes.shape}")
+    print(f"\n Get updated_latent_mesh_nodes: {updated_latent_mesh_nodes.shape} \n")
     latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, np.float32 )
     latents[:] = updated_latent_mesh_nodes[:]
     print( f"Update latents: {latents.shape}")
