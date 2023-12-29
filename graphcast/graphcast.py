@@ -414,6 +414,7 @@ class GraphCast(predictor_base.Predictor):
             "mean_sea_level_pressure": 0.1,
             "total_precipitation_6hr": 0.1,
         })
+    print( f"\n Loss Function>>> mesh_gnn attributes: {list(self._mesh_gnna.__dict__.keys())}\n")
     return loss, predictions  # pytype: disable=bad-return-type  # jax-ndarray
 
   def loss(  # pytype: disable=signature-mismatch  # jax-ndarray
