@@ -321,7 +321,8 @@ class GraphCast(predictor_base.Predictor):
     )
     fine_mesh: icosahedral_mesh.TriangularMesh = self._meshes[-1]
     print( f"Grid Init>> vertices: {fine_mesh.vertices.shape} ")
-#    latents: jax.Array = hk.get_parameter("latents", [nnodes,1,model_config.latent_size], np.float32, init=jnp.ones)
+    nnodes, nfeatures = fine_mesh.vertices.shape[0], model_config.latent_size
+    latents: jax.Array = hk.get_parameter("latents", [nnodes,1,nfeatures], np.float32, init=jnp.ones)
 
     # Obtain the query radius in absolute units for the unit-sphere for the
     # grid2mesh model, by rescaling the `radius_query_fraction_edge_length`.
@@ -377,9 +378,10 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-#    latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, updated_latent_mesh_nodes.dtype, init=jnp.ones )
-#    latents[:] = updated_latent_mesh_nodes[:]
-#    print( f"Update latents: {latents.shape}")
+    print(f"Get updated_latent_mesh_nodes: {updated_latent_mesh_nodes.shape}")
+    latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, np.float32 )
+    latents[:] = updated_latent_mesh_nodes[:]
+    print( f"Update latents: {latents.shape}")
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
