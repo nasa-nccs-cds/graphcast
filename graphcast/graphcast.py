@@ -319,11 +319,6 @@ class GraphCast(predictor_base.Predictor):
         f32_aggregation=False,
         name="mesh2grid_gnn",
     )
-    fine_mesh: icosahedral_mesh.TriangularMesh = self._meshes[-1]
-    print( f" \n  Grid Init>> vertices: {fine_mesh.vertices.shape} \n  ")
-    nnodes, nfeatures = fine_mesh.vertices.shape[0], model_config.latent_size
-    latents: jax.Array = hk.get_parameter("latents", [nnodes,1,nfeatures], np.float32, init=jnp.ones)
-
     # Obtain the query radius in absolute units for the unit-sphere for the
     # grid2mesh model, by rescaling the `radius_query_fraction_edge_length`.
     self._query_radius = (_get_max_edge_distance(self._finest_mesh)
@@ -378,10 +373,10 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-    print(f"\n Get updated_latent_mesh_nodes: {updated_latent_mesh_nodes.shape} \n")
-    latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, np.float32 )
-    latents[:] = updated_latent_mesh_nodes[:]
-    print( f"Update latents: {latents.shape}")
+    # print(f"\n Get updated_latent_mesh_nodes: {updated_latent_mesh_nodes.shape} \n")
+    # latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, np.float32, init=jnp.ones )
+    # latents[:] = updated_latent_mesh_nodes[:]
+    # print( f"Update latents: {latents.shape}")
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
@@ -402,11 +397,9 @@ class GraphCast(predictor_base.Predictor):
       forcings: xarray.Dataset,
       ) -> tuple[predictor_base.LossAndDiagnostics, xarray.Dataset]:
     # Forward pass.
-    predictions = self(
-        inputs, targets_template=targets, forcings=forcings, is_training=True)
+    predictions = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
     # Compute loss.
-    loss = losses.weighted_mse_per_level(
-        predictions, targets,
+    loss = losses.weighted_mse_per_level( predictions, targets,
         per_variable_weights={
             # Any variables not specified here are weighted as 1.0.
             # A single-level variable, but an important headline variable
