@@ -358,7 +358,7 @@ class GraphCast(predictor_base.Predictor):
                targets_template: xarray.Dataset,
                forcings: xarray.Dataset,
                is_training: bool = False,
-               ) -> tuple[xarray.Dataset,Mapping]:
+               ) -> tuple[xarray.Dataset,xarray.DataArray]:
     self._maybe_init(inputs)
 
     # Convert all input data into flat vectors for each of the grid nodes.
@@ -377,7 +377,7 @@ class GraphCast(predictor_base.Predictor):
     # latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, np.float32, init=jnp.ones )
     # latents[:] = updated_latent_mesh_nodes[:]
     print( f"Update latents: shape={updated_latent_mesh_nodes.shape}")
-    internals = dict( latent_mesh_nodes = xarray_jax.DataArray(updated_latent_mesh_nodes, dims=('nodes','batch','features')) )
+    latents =  xarray_jax.DataArray(updated_latent_mesh_nodes, dims=('nodes','batch','features'))
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
@@ -388,7 +388,7 @@ class GraphCast(predictor_base.Predictor):
     # xarray (batch, one time step, lat, lon, level, multiple vars)
     prediction: xarray.Dataset = self._grid_node_outputs_to_prediction(output_grid_nodes, targets_template)
 
-    return prediction, internals
+    return prediction, latents
 
   def loss_and_predictions(  # pytype: disable=signature-mismatch  # jax-ndarray
       self,
@@ -397,7 +397,8 @@ class GraphCast(predictor_base.Predictor):
       forcings: xarray.Dataset,
       ) -> tuple[predictor_base.LossAndDiagnostics, xarray.Dataset]:
     # Forward pass.
-    predictions, internals = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
+    diagnostics: xarray.Dataset = None
+    predictions, latents = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
     # Compute loss.
     loss_diag: predictor_base.LossAndDiagnostics = losses.weighted_mse_per_level( predictions, targets,
         per_variable_weights={
@@ -415,7 +416,8 @@ class GraphCast(predictor_base.Predictor):
             "total_precipitation_6hr": 0.1,
         })
     (loss, diagnostics) = loss_diag
-    diagnostics['internals'] = internals
+    print( f"diagnostics: coords={list(diagnostics.coords.keys())}, latents={latents.dims}")
+    diagnostics['latents'] = latents
     return loss_diag, predictions  # pytype: disable=bad-return-type  # jax-ndarray
 
   def loss(  # pytype: disable=signature-mismatch  # jax-ndarray
