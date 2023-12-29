@@ -415,9 +415,9 @@ class GraphCast(predictor_base.Predictor):
             "mean_sea_level_pressure": 0.1,
             "total_precipitation_6hr": 0.1,
         })
-    (loss, diagnostics) = loss_diag
-    print( f"diagnostics: coords={list(diagnostics.coords.keys())}, latents={latents.dims}")
-    diagnostics['latents'] = latents
+    # (loss, diagnostics) = loss_diag
+    # print( f"diagnostics: coords={list(diagnostics.coords.keys())}, latents={latents.dims}")
+    # diagnostics['latents'] = latents
     return loss_diag, predictions  # pytype: disable=bad-return-type  # jax-ndarray
 
   def loss(  # pytype: disable=signature-mismatch  # jax-ndarray
