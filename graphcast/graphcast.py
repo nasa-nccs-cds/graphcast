@@ -358,7 +358,7 @@ class GraphCast(predictor_base.Predictor):
                targets_template: xarray.Dataset,
                forcings: xarray.Dataset,
                is_training: bool = False,
-               ) -> xarray.Dataset:
+               ) -> tuple[xarray.Dataset,Mapping]:
     self._maybe_init(inputs)
 
     # Convert all input data into flat vectors for each of the grid nodes.
@@ -376,7 +376,8 @@ class GraphCast(predictor_base.Predictor):
     # print(f"\n Get updated_latent_mesh_nodes: {updated_latent_mesh_nodes.shape} \n")
     # latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, np.float32, init=jnp.ones )
     # latents[:] = updated_latent_mesh_nodes[:]
-    # print( f"Update latents: {latents.shape}")
+    print( f"Update latents: shape={updated_latent_mesh_nodes.shape}")
+    internals = dict( latent_mesh_nodes = xarray_jax.DataArray(updated_latent_mesh_nodes, dims=('nodes','batch','features')) )
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
@@ -386,9 +387,8 @@ class GraphCast(predictor_base.Predictor):
     # [num_grid_nodes, batch, output_size] ->
     # xarray (batch, one time step, lat, lon, level, multiple vars)
     prediction: xarray.Dataset = self._grid_node_outputs_to_prediction(output_grid_nodes, targets_template)
-    print( f"Prediction: vars={list(prediction.data_vars.keys())}")
 
-    return prediction
+    return prediction, internals
 
   def loss_and_predictions(  # pytype: disable=signature-mismatch  # jax-ndarray
       self,
@@ -397,9 +397,9 @@ class GraphCast(predictor_base.Predictor):
       forcings: xarray.Dataset,
       ) -> tuple[predictor_base.LossAndDiagnostics, xarray.Dataset]:
     # Forward pass.
-    predictions = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
+    predictions, internals = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
     # Compute loss.
-    loss = losses.weighted_mse_per_level( predictions, targets,
+    loss_diag: predictor_base.LossAndDiagnostics = losses.weighted_mse_per_level( predictions, targets,
         per_variable_weights={
             # Any variables not specified here are weighted as 1.0.
             # A single-level variable, but an important headline variable
@@ -414,9 +414,9 @@ class GraphCast(predictor_base.Predictor):
             "mean_sea_level_pressure": 0.1,
             "total_precipitation_6hr": 0.1,
         })
-    print( f"\n Loss Function>>> mesh_gnn attributes: {list(self._mesh_gnn.__dict__.keys())}")
-    print( f"  ------------> processor_networks: {type(self._mesh_gnn._processor_networks)}" )
-    return loss, predictions  # pytype: disable=bad-return-type  # jax-ndarray
+    (loss, diagnostics) = loss_diag
+    diagnostics['internals'] = internals
+    return loss_diag, predictions  # pytype: disable=bad-return-type  # jax-ndarray
 
   def loss(  # pytype: disable=signature-mismatch  # jax-ndarray
       self,
