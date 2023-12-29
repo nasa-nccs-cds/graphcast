@@ -385,13 +385,7 @@ class GraphCast(predictor_base.Predictor):
     # [num_grid_nodes, batch, output_size] ->
     # xarray (batch, one time step, lat, lon, level, multiple vars)
     prediction: xarray.Dataset = self._grid_node_outputs_to_prediction(output_grid_nodes, targets_template)
-
-    time: np.ndarray = prediction.coords['time'].values
-    latents_dir = os.path.expanduser('~/.graphcast/latents/')
-    os.makedirs(latents_dir,exist_ok=True)
-    latents_file = f"{latents_dir}/latents-{time[-1]}.nc"
-    latents.to_netcdf( latents_file )
-    print( f"Saving latents to {latents_file}, time-dtype={time.dtype}")
+    print( f"Prediction: vars={list(prediction.data_vars.keys())}")
 
     return prediction
 
