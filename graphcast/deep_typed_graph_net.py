@@ -128,7 +128,6 @@ class DeepTypedGraphNet(hk.Module):
     """
 
     super().__init__(name=name)
-
     self._node_latent_size = node_latent_size
     self._edge_latent_size = edge_latent_size
     self._mlp_hidden_size = mlp_hidden_size
@@ -139,14 +138,12 @@ class DeepTypedGraphNet(hk.Module):
     self._embed_edges = embed_edges
     self._node_output_size = node_output_size
     self._edge_output_size = edge_output_size
-    self._include_sent_messages_in_node_update = (
-        include_sent_messages_in_node_update)
+    self._include_sent_messages_in_node_update = include_sent_messages_in_node_update
     self._use_layer_norm = use_layer_norm
     self._activation = _get_activation_fn(activation)
     self._initialized = False
     self._f32_aggregation = f32_aggregation
-    self._aggregate_edges_for_nodes_fn = _get_aggregate_edges_for_nodes_fn(
-        aggregate_edges_for_nodes_fn)
+    self._aggregate_edges_for_nodes_fn = _get_aggregate_edges_for_nodes_fn( aggregate_edges_for_nodes_fn)
     self._aggregate_normalization = aggregate_normalization
 
     if aggregate_normalization:
@@ -173,17 +170,13 @@ class DeepTypedGraphNet(hk.Module):
     self._initialized = True
 
     def build_mlp(name, output_size):
-      mlp = hk.nets.MLP(
-          output_sizes=[self._mlp_hidden_size] * self._mlp_num_hidden_layers + [
-              output_size], name=name + "_mlp", activation=self._activation)
+      mlp = hk.nets.MLP( output_sizes=[self._mlp_hidden_size] * self._mlp_num_hidden_layers + [ output_size], name=name + "_mlp", activation=self._activation)
       return jraph.concatenated_args(mlp)
 
     def build_mlp_with_maybe_layer_norm(name, output_size):
       network = build_mlp(name, output_size)
       if self._use_layer_norm:
-        layer_norm = hk.LayerNorm(
-            axis=-1, create_scale=True, create_offset=True,
-            name=name + "_layer_norm")
+        layer_norm = hk.LayerNorm( axis=-1, create_scale=True, create_offset=True, name=name + "_layer_norm")
         network = hk.Sequential([network, layer_norm])
       return jraph.concatenated_args(network)
 

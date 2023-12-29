@@ -39,7 +39,7 @@ from graphcast import typed_graph
 from graphcast import xarray_jax
 import haiku as hk
 import jax.numpy as jnp
-import jraph
+import jraph, jax
 import numpy as np
 import xarray
 
@@ -376,8 +376,9 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-  #  latents = xarray_jax.DataArray(data=updated_latent_mesh_nodes, dims=['grid', 'batch', 'features']).astype(np.float32)
-  #  hk.set_state("latents", updated_latent_mesh_nodes )
+    latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, updated_latent_mesh_nodes.dtype )
+    latents = updated_latent_mesh_nodes
+    print( f"Update latents: {latents.shape}")
 
     # Transfer data frome the mesh to the grid.
     # [num_grid_nodes, batch, output_size]
