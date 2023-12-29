@@ -376,7 +376,7 @@ class GraphCast(predictor_base.Predictor):
     # Run message passing in the multimesh.
     # [num_mesh_nodes, batch, latent_size]
     updated_latent_mesh_nodes: chex.Array = self._run_mesh_gnn(latent_mesh_nodes)
-    latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, updated_latent_mesh_nodes.dtype )
+    latents: jax.Array = hk.get_parameter("latents", updated_latent_mesh_nodes.shape, updated_latent_mesh_nodes.dtype, init=jnp.ones )
     latents[:] = updated_latent_mesh_nodes[:]
     print( f"Update latents: {latents.shape}")
 
