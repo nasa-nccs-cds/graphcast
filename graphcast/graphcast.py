@@ -358,7 +358,7 @@ class GraphCast(predictor_base.Predictor):
                targets_template: xarray.Dataset,
                forcings: xarray.Dataset,
                is_training: bool = False,
-               ) -> tuple[xarray.Dataset,xarray.DataArray]:
+               ) -> xarray.Dataset:
     self._maybe_init(inputs)
 
     # Convert all input data into flat vectors for each of the grid nodes.
@@ -388,7 +388,7 @@ class GraphCast(predictor_base.Predictor):
     # xarray (batch, one time step, lat, lon, level, multiple vars)
     prediction: xarray.Dataset = self._grid_node_outputs_to_prediction(output_grid_nodes, targets_template)
 
-    return prediction, latents
+    return prediction
 
   def loss_and_predictions(  # pytype: disable=signature-mismatch  # jax-ndarray
       self,
@@ -398,7 +398,7 @@ class GraphCast(predictor_base.Predictor):
       ) -> tuple[predictor_base.LossAndDiagnostics, xarray.Dataset]:
     # Forward pass.
     diagnostics: xarray.Dataset = None
-    predictions, latents = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
+    predictions = self( inputs, targets_template=targets, forcings=forcings, is_training=True)
     # Compute loss.
     loss_diag: predictor_base.LossAndDiagnostics = losses.weighted_mse_per_level( predictions, targets,
         per_variable_weights={
